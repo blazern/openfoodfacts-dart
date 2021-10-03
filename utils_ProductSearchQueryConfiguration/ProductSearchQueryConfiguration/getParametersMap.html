@@ -75,25 +75,10 @@
   <pre class="language-dart"><code class="language-dart">@override
 Map&lt;String, String&gt; getParametersMap() {
   final Map&lt;String, String&gt; result = super.getParametersMap();
-
-  int filterTagCount = 0;
-  for (Parameter p in parametersList) {
-    if (p is TagFilter) {
-      TagFilter tf = p;
-      result.putIfAbsent(&#39;tagtype_$filterTagCount&#39;, () =&gt; tf.getTagType());
-      result.putIfAbsent(
-          &#39;tag_contains_$filterTagCount&#39;, () =&gt; tf.getContains());
-      result.putIfAbsent(&#39;tag_$filterTagCount&#39;, () =&gt; tf.getTagName());
-      filterTagCount++;
-    } else {
-      result.putIfAbsent(p.getName(), () =&gt; p.getValue());
-    }
-  }
+  result.addAll(parametersListToParametersMap(parametersList));
   result.putIfAbsent(&#39;search_terms&#39;, () =&gt; &#39;&#39;);
-
   &#47;&#47; explicit json output
   result.putIfAbsent(&#39;json&#39;, () =&gt; &#39;1&#39;);
-
   return result;
 }</code></pre>
 </section>
@@ -139,6 +124,7 @@ Map&lt;String, String&gt; getParametersMap() {
     <li><a href="../../utils_ProductSearchQueryConfiguration/ProductSearchQueryConfiguration/getFieldsKeys.html">getFieldsKeys</a></li>
     <li><a href="../../utils_ProductSearchQueryConfiguration/ProductSearchQueryConfiguration/getParametersMap.html">getParametersMap</a></li>
     <li class="inherited"><a href="https://api.dart.dev/stable/2.14.3/dart-core/Object/noSuchMethod.html">noSuchMethod</a></li>
+    <li class="inherited"><a href="../../utils_AbstractQueryConfiguration/AbstractQueryConfiguration/parametersListToParametersMap.html">parametersListToParametersMap</a></li>
     <li class="inherited"><a href="https://api.dart.dev/stable/2.14.3/dart-core/Object/toString.html">toString</a></li>
 
     <li class="section-title inherited"><a href="../../utils_ProductSearchQueryConfiguration/ProductSearchQueryConfiguration-class.html#operators">Operators</a></li>
