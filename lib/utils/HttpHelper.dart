@@ -13,12 +13,9 @@ import 'OpenFoodAPIConfiguration.dart';
 import 'QueryType.dart';
 
 abstract class HttpInterceptor {
-  Future<http.Response>? interceptGet(
-      Uri uri, User? user, UserAgent? userAgent, QueryType? queryType);
-  Future<http.Response>? interceptPost(
-      Uri uri, Map<String, String?> body, User user, QueryType? queryType);
-  Future<Status>? interceptMultipart(Uri uri, Map<String, String> body,
-      Map<String, Uri>? files, User? user, QueryType? queryType);
+  Future<http.Request?> interceptGet(Uri uri);
+  Future<http.Request?> interceptPost(Uri uri);
+  Future<http.MultipartRequest?> interceptMultipart(String method, Uri uri);
 }
 
 /// General functions for sending http requests (post, get, multipart, ...)
@@ -41,25 +38,34 @@ class HttpHelper {
     UserAgent? userAgent,
     QueryType? queryType,
   }) async {
-    final interception =
-        interceptor?.interceptGet(uri, user, userAgent, queryType);
-    if (interception != null) {
-      return await interception;
-    }
-    http.Response response = await http.get(
-      uri,
-      headers: _buildHeaders(
-        user: user,
-        userAgent: userAgent,
-        isTestModeActive:
-            (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
-                    QueryType.PROD
-                ? false
-                : true,
-      ),
+    var request = await interceptor?.interceptGet(uri);
+    request ??= http.Request('GET', uri);
+    request.headers.addAll(
+        _buildHeaders(
+          user: user,
+          userAgent: userAgent,
+          isTestModeActive:
+          (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
+              QueryType.PROD
+              ? false
+              : true,
+        ) ?? const {}
     );
-
-    return response;
+    return http.Response.fromStream(await request.send());
+    // http.Response response = await http.get(
+    //   uri,
+    //   headers: _buildHeaders(
+    //     user: user,
+    //     userAgent: userAgent,
+    //     isTestModeActive:
+    //     (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
+    //         QueryType.PROD
+    //         ? false
+    //         : true,
+    //   ),
+    // );
+    //
+    // return response;
   }
 
   /// Send a http post request to the specified uri.
@@ -68,23 +74,31 @@ class HttpHelper {
   Future<http.Response> doPostRequest(
       Uri uri, Map<String, String?> body, User user,
       {QueryType? queryType}) async {
-    final interception = interceptor?.interceptPost(uri, body, user, queryType);
-    if (interception != null) {
-      return await interception;
-    }
-
-    http.Response response = await http.post(
-      uri,
-      headers: _buildHeaders(
-          user: user,
-          isTestModeActive:
-              (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
-                      QueryType.PROD
-                  ? false
-                  : true),
-      body: body,
+    var request = await interceptor?.interceptPost(uri);
+    request ??= http.Request('POST', uri);
+    request.headers.addAll(
+        _buildHeaders(
+            user: user,
+            isTestModeActive:
+            (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
+                QueryType.PROD
+                ? false
+                : true) ?? const {}
     );
-    return response;
+    request.bodyFields = body.map((key, value) => MapEntry(key, value ?? ''));
+    return http.Response.fromStream(await request.send());
+    // http.Response response = await http.post(
+    //   uri,
+    //   headers: _buildHeaders(
+    //       user: user,
+    //       isTestModeActive:
+    //       (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
+    //           QueryType.PROD
+    //           ? false
+    //           : true),
+    //   body: body,
+    // );
+    // return response;
   }
 
   /// Send a multipart post request to the specified uri.
@@ -98,13 +112,8 @@ class HttpHelper {
     User? user,
     QueryType? queryType,
   }) async {
-    final interception =
-        interceptor?.interceptMultipart(uri, body, files, user, queryType);
-    if (interception != null) {
-      return await interception;
-    }
-
-    var request = http.MultipartRequest('POST', uri);
+    var request = await interceptor?.interceptMultipart('POST', uri);
+    request ??= http.MultipartRequest('POST', uri);
 
     request.headers.addAll(
       _buildHeaders(
