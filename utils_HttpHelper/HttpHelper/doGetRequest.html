@@ -80,6 +80,11 @@ By default the query will hit the PROD DB</p>
   UserAgent? userAgent,
   QueryType? queryType,
 }) async {
+  final fullInterception = await interceptor?.fullyInterceptGet(uri);
+  if (fullInterception != null) {
+    return fullInterception;
+  }
+
   var request = await interceptor?.interceptGet(uri);
   request ??= http.Request(&#39;GET&#39;, uri);
   request.headers.addAll(
