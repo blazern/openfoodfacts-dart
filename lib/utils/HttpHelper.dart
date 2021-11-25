@@ -13,9 +13,10 @@ import 'OpenFoodAPIConfiguration.dart';
 import 'QueryType.dart';
 
 abstract class HttpInterceptor {
-  Future<http.Request?> interceptGet(Uri uri);
-  Future<http.Request?> interceptPost(Uri uri);
-  Future<http.MultipartRequest?> interceptMultipart(String method, Uri uri);
+  Future<http.Request>? interceptGet(Uri uri);
+  Future<http.Response>? fullyInterceptGet(Uri uri);
+  Future<http.Request>? interceptPost(Uri uri);
+  Future<http.MultipartRequest>? interceptMultipart(String method, Uri uri);
 }
 
 /// General functions for sending http requests (post, get, multipart, ...)
@@ -38,6 +39,11 @@ class HttpHelper {
     UserAgent? userAgent,
     QueryType? queryType,
   }) async {
+    final fullInterception = await interceptor?.fullyInterceptGet(uri);
+    if (fullInterception != null) {
+      return fullInterception;
+    }
+
     var request = await interceptor?.interceptGet(uri);
     request ??= http.Request('GET', uri);
     request.headers.addAll(
