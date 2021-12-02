@@ -46,17 +46,16 @@ class HttpHelper {
 
     var request = await interceptor?.interceptGet(uri);
     request ??= http.Request('GET', uri);
-    request.headers.addAll(
-        _buildHeaders(
+    request.headers.addAll(_buildHeaders(
           user: user,
           userAgent: userAgent,
           isTestModeActive:
-          (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
-              QueryType.PROD
-              ? false
-              : true,
-        ) ?? const {}
-    );
+              (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
+                      QueryType.PROD
+                  ? false
+                  : true,
+        ) ??
+        const {});
     return http.Response.fromStream(await request.send());
     // http.Response response = await http.get(
     //   uri,
@@ -82,15 +81,14 @@ class HttpHelper {
       {QueryType? queryType}) async {
     var request = await interceptor?.interceptPost(uri);
     request ??= http.Request('POST', uri);
-    request.headers.addAll(
-        _buildHeaders(
+    request.headers.addAll(_buildHeaders(
             user: user,
             isTestModeActive:
-            (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
-                QueryType.PROD
-                ? false
-                : true) ?? const {}
-    );
+                (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
+                        QueryType.PROD
+                    ? false
+                    : true) ??
+        const {});
     request.bodyFields = body.map((key, value) => MapEntry(key, value ?? ''));
     return http.Response.fromStream(await request.send());
     // http.Response response = await http.post(
