@@ -87,17 +87,16 @@ By default the query will hit the PROD DB</p>
 
   var request = await interceptor?.interceptGet(uri);
   request ??= http.Request(&#39;GET&#39;, uri);
-  request.headers.addAll(
-      _buildHeaders(
+  request.headers.addAll(_buildHeaders(
         user: user,
         userAgent: userAgent,
         isTestModeActive:
-        (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
-            QueryType.PROD
-            ? false
-            : true,
-      ) ?? const {}
-  );
+            (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
+                    QueryType.PROD
+                ? false
+                : true,
+      ) ??
+      const {});
   return http.Response.fromStream(await request.send());
   &#47;&#47; http.Response response = await http.get(
   &#47;&#47;   uri,

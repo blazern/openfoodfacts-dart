@@ -78,15 +78,14 @@ The result of the request will be returned as string.</p>
     {QueryType? queryType}) async {
   var request = await interceptor?.interceptPost(uri);
   request ??= http.Request(&#39;POST&#39;, uri);
-  request.headers.addAll(
-      _buildHeaders(
+  request.headers.addAll(_buildHeaders(
           user: user,
           isTestModeActive:
-          (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
-              QueryType.PROD
-              ? false
-              : true) ?? const {}
-  );
+              (queryType ?? OpenFoodAPIConfiguration.globalQueryType) ==
+                      QueryType.PROD
+                  ? false
+                  : true) ??
+      const {});
   request.bodyFields = body.map((key, value) =&gt; MapEntry(key, value ?? &#39;&#39;));
   return http.Response.fromStream(await request.send());
   &#47;&#47; http.Response response = await http.post(
