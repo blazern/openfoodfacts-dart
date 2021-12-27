@@ -11,6 +11,13 @@ import 'package:path/path.dart';
 import 'OpenFoodAPIConfiguration.dart';
 import 'QueryType.dart';
 
+abstract class HttpInterceptor {
+  Future<http.Request>? interceptGet(Uri uri);
+  Future<http.Response>? fullyInterceptGet(Uri uri);
+  Future<http.Request>? interceptPost(Uri uri);
+  Future<http.MultipartRequest>? interceptMultipart(String method, Uri uri);
+}
+
 /// General functions for sending http requests (post, get, multipart, ...)
 class HttpHelper {
   /// Gets the instance
@@ -18,6 +25,8 @@ class HttpHelper {
   static HttpHelper? _instance;
   @visibleForTesting
   static set instance(HttpHelper value) => _instance = value;
+
+  static HttpInterceptor? interceptor;
 
   factory HttpHelper() => instance;
 
@@ -38,18 +47,33 @@ class HttpHelper {
     User? user,
     QueryType? queryType,
   }) async {
-    http.Response response = await http.get(
-      uri,
-      headers: _buildHeaders(
+    final fullInterception = await interceptor?.fullyInterceptGet(uri);
+    if (fullInterception != null) {
+      return fullInterception;
+    }
+
+    var request = await interceptor?.interceptGet(uri);
+    request ??= http.Request('GET', uri);
+    request.headers.addAll(_buildHeaders(
         user: user,
         isTestModeActive:
             OpenFoodAPIConfiguration.getQueryType(queryType) == QueryType.PROD
                 ? false
-                : true,
-      ),
-    );
+                : true));
+    return http.Response.fromStream(await request.send());
 
-    return response;
+    // http.Response response = await http.get(
+    //   uri,
+    //   headers: _buildHeaders(
+    //     user: user,
+    //     isTestModeActive:
+    //         OpenFoodAPIConfiguration.getQueryType(queryType) == QueryType.PROD
+    //             ? false
+    //             : true,
+    //   ),
+    // );
+
+    // return response;
   }
 
   /// Send a http post request to the specified uri.
@@ -61,17 +85,28 @@ class HttpHelper {
     User? user, {
     QueryType? queryType,
   }) async {
-    http.Response response = await http.post(
-      uri,
-      headers: _buildHeaders(
-          user: user,
-          isTestModeActive:
-              OpenFoodAPIConfiguration.getQueryType(queryType) == QueryType.PROD
-                  ? false
-                  : true),
-      body: body,
-    );
-    return response;
+    var request = await interceptor?.interceptPost(uri);
+    request ??= http.Request('POST', uri);
+    request.headers.addAll(_buildHeaders(
+        user: user,
+        isTestModeActive:
+            OpenFoodAPIConfiguration.getQueryType(queryType) == QueryType.PROD
+                ? false
+                : true));
+    request.bodyFields = body.map((key, value) => MapEntry(key, value ?? ''));
+    return http.Response.fromStream(await request.send());
+
+    // http.Response response = await http.post(
+    //   uri,
+    //   headers: _buildHeaders(
+    //       user: user,
+    //       isTestModeActive:
+    //           OpenFoodAPIConfiguration.getQueryType(queryType) == QueryType.PROD
+    //               ? false
+    //               : true),
+    //   body: body,
+    // );
+    // return response;
   }
 
   /// Send a multipart post request to the specified uri.
@@ -85,7 +120,8 @@ class HttpHelper {
     User? user,
     QueryType? queryType,
   }) async {
-    var request = http.MultipartRequest('POST', uri);
+    var request = await interceptor?.interceptMultipart('POST', uri);
+    request ??= http.MultipartRequest('POST', uri);
 
     request.headers.addAll(
       _buildHeaders(
@@ -132,11 +168,11 @@ class HttpHelper {
 
   /// build the request headers
   /// By default isTestMode is false
-  Map<String, String>? _buildHeaders({
+  Map<String, String> _buildHeaders({
     User? user,
     bool isTestModeActive = false,
   }) {
-    Map<String, String>? headers = {};
+    Map<String, String> headers = {};
 
     headers.addAll({
       'Accept': 'application/json',
