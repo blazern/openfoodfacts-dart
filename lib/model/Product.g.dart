@@ -24,7 +24,6 @@ Product _$ProductFromJson(Map<String, dynamic> json) => Product(
           json['countries_tags_in_languages']),
       lang: LanguageHelper.fromJson(json['lang'] as String?),
       quantity: json['quantity'] as String?,
-      imgSmallUrl: json['image_small_url'] as String?,
       imageFrontUrl: json['image_front_url'] as String?,
       imageFrontSmallUrl: json['image_front_small_url'] as String?,
       imageIngredientsUrl: json['image_ingredients_url'] as String?,
@@ -52,9 +51,6 @@ Product _$ProductFromJson(Map<String, dynamic> json) => Product(
           json['ingredients_tags_in_languages']),
       ingredientsAnalysisTags: IngredientsAnalysisTags.fromJson(
           json['ingredients_analysis_tags'] as List?),
-      nutriments: json['nutriments'] == null
-          ? null
-          : Nutriments.fromJson(json['nutriments'] as Map<String, dynamic>),
       additives: Additives.additivesFromJson(json['additives_tags'] as List?),
       environmentImpactLevels: EnvironmentImpactLevels.fromJson(
           json['environment_impact_level_tags'] as List?),
@@ -101,14 +97,24 @@ Product _$ProductFromJson(Map<String, dynamic> json) => Product(
           ? null
           : EcoscoreData.fromJson(
               json['ecoscore_data'] as Map<String, dynamic>),
-    )..imagesFreshnessInLanguages =
+      nutriments: json['nutriments'] == null
+          ? null
+          : Nutriments.fromJson(json['nutriments'] as Map<String, dynamic>),
+      noNutritionData: JsonHelper.checkboxFromJSON(json['no_nutrition_data']),
+    )
+      ..imagesFreshnessInLanguages =
           (json['imagesFreshnessInLanguages'] as Map<String, dynamic>?)?.map(
         (k, e) => MapEntry(
             $enumDecode(_$OpenFoodFactsLanguageEnumMap, k),
             (e as Map<String, dynamic>).map(
               (k, e) => MapEntry($enumDecode(_$ImageFieldEnumMap, k), e as int),
             )),
-      );
+      )
+      ..packagingTextInLanguages =
+          LanguageHelper.fromJsonStringMap(json['packaging_text_in_languages'])
+      ..knowledgePanels =
+          KnowledgePanels.fromJsonHelper(json['knowledge_panels'] as Map?)
+      ..environmentInfoCard = json['environment_infocard'] as String?;
 
 Map<String, dynamic> _$ProductToJson(Product instance) {
   final val = <String, dynamic>{
@@ -133,7 +139,6 @@ Map<String, dynamic> _$ProductToJson(Product instance) {
       LanguageHelper.toJsonStringsListMap(instance.countriesTagsInLanguages));
   writeNotNull('lang', LanguageHelper.toJson(instance.lang));
   writeNotNull('quantity', instance.quantity);
-  writeNotNull('image_small_url', instance.imgSmallUrl);
   writeNotNull('image_front_url', instance.imageFrontUrl);
   writeNotNull('image_front_small_url', instance.imageFrontSmallUrl);
   writeNotNull('image_ingredients_url', instance.imageIngredientsUrl);
@@ -162,7 +167,6 @@ Map<String, dynamic> _$ProductToJson(Product instance) {
           e.map((k, e) => MapEntry(_$ImageFieldEnumMap[k], e))));
   writeNotNull('ingredients_analysis_tags',
       IngredientsAnalysisTags.toJson(instance.ingredientsAnalysisTags));
-  writeNotNull('nutriments', Nutriments.toJsonHelper(instance.nutriments));
   writeNotNull('additives_tags', Additives.additivesToJson(instance.additives));
   writeNotNull('environment_impact_level_tags',
       EnvironmentImpactLevels.toJson(instance.environmentImpactLevels));
@@ -182,6 +186,8 @@ Map<String, dynamic> _$ProductToJson(Product instance) {
       LanguageHelper.toJsonStringsListMap(instance.labelsTagsInLanguages));
   writeNotNull('packaging', instance.packaging);
   writeNotNull('packaging_tags', instance.packagingTags);
+  writeNotNull('packaging_text_in_languages',
+      LanguageHelper.toJsonStringMap(instance.packagingTextInLanguages));
   writeNotNull('misc', instance.miscTags);
   writeNotNull('states_tags', instance.statesTags);
   writeNotNull('traces_tags', instance.tracesTags);
@@ -195,6 +201,12 @@ Map<String, dynamic> _$ProductToJson(Product instance) {
   writeNotNull('ecoscore_score', instance.ecoscoreScore);
   writeNotNull(
       'ecoscore_data', EcoscoreData.toJsonHelper(instance.ecoscoreData));
+  writeNotNull('knowledge_panels',
+      KnowledgePanels.toJsonHelper(instance.knowledgePanels));
+  writeNotNull('environment_infocard', instance.environmentInfoCard);
+  val['no_nutrition_data'] =
+      JsonHelper.checkboxToJSON(instance.noNutritionData);
+  writeNotNull('nutriments', Nutriments.toJsonHelper(instance.nutriments));
   return val;
 }
 
@@ -214,6 +226,7 @@ const _$OpenFoodFactsLanguageEnumMap = {
   OpenFoodFactsLanguage.MALAY: 'MALAY',
   OpenFoodFactsLanguage.TAGALOG: 'TAGALOG',
   OpenFoodFactsLanguage.MOLDOVAN: 'MOLDOVAN',
+  OpenFoodFactsLanguage.MONGOLIAN: 'MONGOLIAN',
   OpenFoodFactsLanguage.KOREAN: 'KOREAN',
   OpenFoodFactsLanguage.LUBA_KATANGA_LANGUAGE: 'LUBA_KATANGA_LANGUAGE',
   OpenFoodFactsLanguage.KAZAKH: 'KAZAKH',

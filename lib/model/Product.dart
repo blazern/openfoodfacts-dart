@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:openfoodfacts/model/Attribute.dart';
 import 'package:openfoodfacts/model/AttributeGroup.dart';
+import 'package:openfoodfacts/model/KnowledgePanels.dart';
 import 'package:openfoodfacts/model/ProductImage.dart';
 import 'package:openfoodfacts/utils/JsonHelper.dart';
 import 'package:openfoodfacts/utils/LanguageHelper.dart';
@@ -135,11 +136,6 @@ class Product extends JsonObject {
   String? quantity;
 
   // Images
-  @JsonKey(name: 'image_small_url', includeIfNull: false)
-  // TODO: deprecated from 2021-04-06 (#152); remove when old enough
-  @Deprecated('Use imageFrontSmallUrl instead')
-  String? imgSmallUrl;
-
   @JsonKey(name: 'image_front_url', includeIfNull: false)
   String? imageFrontUrl;
   @JsonKey(name: 'image_front_small_url', includeIfNull: false)
@@ -230,9 +226,17 @@ class Product extends JsonObject {
       toJson: IngredientsAnalysisTags.toJson)
   IngredientsAnalysisTags? ingredientsAnalysisTags;
 
-  @JsonKey(
-      name: 'nutriments', includeIfNull: false, toJson: Nutriments.toJsonHelper)
-  Nutriments? nutriments;
+  /// When no nutrition data is true, nutriments are always null
+  /// This logic is handled by the getters/setters of [noNutritionData] and
+  /// [nutriments]
+  @JsonKey(ignore: true)
+  bool? _noNutritionData;
+
+  /// When nutriments are not null, no nutrition data can't be true
+  /// This logic is handled by the getters/setters of [noNutritionData] and
+  /// [nutriments]
+  @JsonKey(ignore: true)
+  Nutriments? _nutriments;
 
   @JsonKey(
       name: 'additives_tags',
@@ -295,6 +299,12 @@ class Product extends JsonObject {
   String? packaging;
   @JsonKey(name: 'packaging_tags', includeIfNull: false)
   List<String>? packagingTags;
+  @JsonKey(
+      name: 'packaging_text_in_languages',
+      fromJson: LanguageHelper.fromJsonStringMap,
+      toJson: LanguageHelper.toJsonStringMap,
+      includeIfNull: false)
+  Map<OpenFoodFactsLanguage, String>? packagingTextInLanguages;
 
   @JsonKey(name: 'misc', includeIfNull: false)
   List<String>? miscTags;
@@ -334,6 +344,19 @@ class Product extends JsonObject {
       toJson: EcoscoreData.toJsonHelper)
   EcoscoreData? ecoscoreData;
 
+  @JsonKey(
+      name: 'knowledge_panels',
+      includeIfNull: false,
+      fromJson: KnowledgePanels.fromJsonHelper,
+      toJson: KnowledgePanels.toJsonHelper)
+  KnowledgePanels? knowledgePanels;
+
+  @JsonKey(
+    name: 'environment_infocard',
+    includeIfNull: false,
+  )
+  String? environmentInfoCard;
+
   Product(
       {this.barcode,
       this.productName,
@@ -346,7 +369,6 @@ class Product extends JsonObject {
       this.countriesTagsInLanguages,
       this.lang,
       this.quantity,
-      this.imgSmallUrl,
       this.imageFrontUrl,
       this.imageFrontSmallUrl,
       this.imageIngredientsUrl,
@@ -366,7 +388,6 @@ class Product extends JsonObject {
       this.ingredientsTags,
       this.ingredientsTagsInLanguages,
       this.ingredientsAnalysisTags,
-      this.nutriments,
       this.additives,
       this.environmentImpactLevels,
       this.allergens,
@@ -391,7 +412,11 @@ class Product extends JsonObject {
       this.lastModified,
       this.ecoscoreGrade,
       this.ecoscoreScore,
-      this.ecoscoreData});
+      this.ecoscoreData,
+      Nutriments? nutriments,
+      bool? noNutritionData})
+      : _nutriments = nutriments,
+        _noNutritionData = noNutritionData;
 
   factory Product.fromJson(Map<String, dynamic> json) {
     final Product result = _$ProductFromJson(json);
@@ -411,33 +436,28 @@ class Product extends JsonObject {
       // We store those values in a more structured maps like
       // [productNameInLanguages].
       if (key == ProductField.NAME_ALL_LANGUAGES.key) {
-        final langs = json[key];
-        if (langs is Map<String, dynamic>) {
+        final Map<OpenFoodFactsLanguage, String>? localized =
+            _getLocalizedStrings(json[key]);
+        if (localized != null) {
           result.productNameInLanguages ??= {};
-          for (final langValuePair in langs.entries) {
-            final lang = LanguageHelper.fromJson(langValuePair.key);
-            if (lang == OpenFoodFactsLanguage.UNDEFINED) {
-              continue;
-            }
-            final value = langValuePair.value;
-            result.productNameInLanguages![lang] = value.toString();
-          }
+          result.productNameInLanguages!.addAll(localized);
         }
       } else if (key == ProductField.INGREDIENTS_TEXT_ALL_LANGUAGES.key) {
-        final langs = json[key];
-        if (langs is Map<String, dynamic>) {
+        final Map<OpenFoodFactsLanguage, String>? localized =
+            _getLocalizedStrings(json[key]);
+        if (localized != null) {
           result.ingredientsTextInLanguages ??= {};
-          for (final langValuePair in langs.entries) {
-            final lang = LanguageHelper.fromJson(langValuePair.key);
-            if (lang == OpenFoodFactsLanguage.UNDEFINED) {
-              continue;
-            }
-            final value = langValuePair.value;
-            result.ingredientsTextInLanguages![lang] = value.toString();
-          }
+          result.ingredientsTextInLanguages!.addAll(localized);
+        }
+      } else if (key == ProductField.PACKAGING_TEXT_ALL_LANGUAGES.key) {
+        final Map<OpenFoodFactsLanguage, String>? localized =
+            _getLocalizedStrings(json[key]);
+        if (localized != null) {
+          result.packagingTextInLanguages ??= {};
+          result.packagingTextInLanguages!.addAll(localized);
         }
       } else if (key.startsWith(ProductField.NAME_IN_LANGUAGES.key)) {
-        OpenFoodFactsLanguage lang =
+        final OpenFoodFactsLanguage lang =
             _langFrom(key, ProductField.NAME_IN_LANGUAGES.key);
         if (lang != OpenFoodFactsLanguage.UNDEFINED) {
           result.productNameInLanguages ??= {};
@@ -445,7 +465,7 @@ class Product extends JsonObject {
         }
       } else if (key
           .startsWith(ProductField.CATEGORIES_TAGS_IN_LANGUAGES.key)) {
-        OpenFoodFactsLanguage lang =
+        final OpenFoodFactsLanguage lang =
             _langFrom(key, ProductField.CATEGORIES_TAGS_IN_LANGUAGES.key);
         final values = _jsonValueToList(json[key]);
         if (lang != OpenFoodFactsLanguage.UNDEFINED && values != null) {
@@ -454,7 +474,7 @@ class Product extends JsonObject {
         }
       } else if (key
           .startsWith(ProductField.INGREDIENTS_TAGS_IN_LANGUAGES.key)) {
-        OpenFoodFactsLanguage lang =
+        final OpenFoodFactsLanguage lang =
             _langFrom(key, ProductField.INGREDIENTS_TAGS_IN_LANGUAGES.key);
         final values = _jsonValueToList(json[key]);
         if (lang != OpenFoodFactsLanguage.UNDEFINED && values != null) {
@@ -472,7 +492,7 @@ class Product extends JsonObject {
           result.imagesFreshnessInLanguages![lang] = values;
         }
       } else if (key.startsWith(ProductField.LABELS_TAGS_IN_LANGUAGES.key)) {
-        OpenFoodFactsLanguage lang =
+        final OpenFoodFactsLanguage lang =
             _langFrom(key, ProductField.LABELS_TAGS_IN_LANGUAGES.key);
         final values = _jsonValueToList(json[key]);
         if (lang != OpenFoodFactsLanguage.UNDEFINED && values != null) {
@@ -480,7 +500,7 @@ class Product extends JsonObject {
           result.labelsTagsInLanguages![lang] = values;
         }
       } else if (key.startsWith(ProductField.COUNTRIES_TAGS_IN_LANGUAGES.key)) {
-        OpenFoodFactsLanguage lang =
+        final OpenFoodFactsLanguage lang =
             _langFrom(key, ProductField.COUNTRIES_TAGS_IN_LANGUAGES.key);
         final values = _jsonValueToList(json[key]);
         if (lang != OpenFoodFactsLanguage.UNDEFINED && values != null) {
@@ -489,13 +509,39 @@ class Product extends JsonObject {
         }
       } else if (key
           .startsWith(ProductField.INGREDIENTS_TEXT_IN_LANGUAGES.key)) {
-        OpenFoodFactsLanguage lang =
+        final OpenFoodFactsLanguage lang =
             _langFrom(key, ProductField.INGREDIENTS_TEXT_IN_LANGUAGES.key);
         if (lang != OpenFoodFactsLanguage.UNDEFINED) {
           result.ingredientsTextInLanguages ??= {};
           result.ingredientsTextInLanguages![lang] = json[key];
         }
+      } else if (key.startsWith(ProductField.PACKAGING_TEXT_IN_LANGUAGES.key)) {
+        final OpenFoodFactsLanguage lang =
+            _langFrom(key, ProductField.PACKAGING_TEXT_IN_LANGUAGES.key);
+        if (lang != OpenFoodFactsLanguage.UNDEFINED) {
+          result.packagingTextInLanguages ??= {};
+          result.packagingTextInLanguages![lang] = json[key];
+        }
       }
+    }
+    return result;
+  }
+
+  static Map<OpenFoodFactsLanguage, String>? _getLocalizedStrings(
+    final dynamic langs,
+  ) {
+    Map<OpenFoodFactsLanguage, String>? result;
+    if (langs is! Map<String, dynamic>) {
+      return result;
+    }
+    for (final langValuePair in langs.entries) {
+      final lang = LanguageHelper.fromJson(langValuePair.key);
+      if (lang == OpenFoodFactsLanguage.UNDEFINED) {
+        continue;
+      }
+      final value = langValuePair.value;
+      result ??= <OpenFoodFactsLanguage, String>{};
+      result[lang] = value.toString();
     }
     return result;
   }
@@ -613,5 +659,38 @@ class Product extends JsonObject {
 
 // TODO (Optional) Add Nutri-Score disclaimers cf. https://github.com/openfoodfacts/openfoodfacts-dart/issues/193
     return result;
+  }
+
+  @JsonKey(
+    name: 'no_nutrition_data',
+    toJson: JsonHelper.checkboxToJSON,
+    fromJson: JsonHelper.checkboxFromJSON,
+  )
+  bool? get noNutritionData {
+    if (_noNutritionData != null) {
+      return _noNutritionData!;
+    } else if (_nutriments != null) {
+      return false;
+    } else {
+      return null;
+    }
+  }
+
+  set noNutritionData(bool? noNutritionData) {
+    if (_noNutritionData == true) {
+      _nutriments = null;
+    }
+    _noNutritionData = noNutritionData;
+  }
+
+  @JsonKey(
+      name: 'nutriments', includeIfNull: false, toJson: Nutriments.toJsonHelper)
+  Nutriments? get nutriments => _noNutritionData == true ? null : _nutriments;
+
+  set nutriments(Nutriments? nutriments) {
+    if (nutriments == null) {
+      _noNutritionData = true;
+    }
+    _nutriments = nutriments;
   }
 }

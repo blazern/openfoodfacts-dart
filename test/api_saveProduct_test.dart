@@ -6,6 +6,7 @@ import 'package:openfoodfacts/utils/OpenFoodAPIConfiguration.dart';
 import 'package:openfoodfacts/utils/QueryType.dart';
 import 'package:openfoodfacts/utils/UnitHelper.dart';
 import 'package:test/test.dart';
+
 import 'test_constants.dart';
 
 void main() {
@@ -85,11 +86,7 @@ void main() {
       );
 
       testProductResult1(result2);
-    },
-        timeout: Timeout(
-          // this guy is rather slow
-          Duration(seconds: 90),
-        ));
+    });
 
     /// Returns a timestamp up to the minute level.
     String _getMinuteTimestamp() =>
@@ -189,11 +186,7 @@ void main() {
 
       expect(frenchGermanResult.product, isNotNull);
       expect(frenchGermanResult.product!.productName, frenchProductName);
-    },
-        timeout: Timeout(
-          // this guy is rather slow
-          Duration(seconds: 90),
-        ));
+    });
 
     test('add new product test 2', () async {
       Product product = Product(
@@ -229,11 +222,7 @@ void main() {
 
       expect(status.status, 1);
       expect(status.statusVerbose, 'fields saved');
-    },
-        timeout: Timeout(
-          // this guy is rather slow
-          Duration(seconds: 90),
-        ));
+    });
 
     test('add new product test 4', () async {
       Product product = Product(
@@ -305,7 +294,7 @@ void main() {
       expect(result.product!.packaging,
           'Product packaging test 1,Product packaging test 2');
       expect(result.product!.packagingTags,
-          ['product-packaging-test-1', 'product-packaging-test-2']);
+          ['en:product-packaging-test-1', 'en:product-packaging-test-2']);
       expect(result.product!.categories,
           'Product categories test 1,Product categories test 2');
       expect(result.product!.categoriesTags,
@@ -340,6 +329,7 @@ void main() {
       const double CARBOHYDRATES = 12;
       const double PROTEINS = 6;
       const double FAT = 0.1;
+      const double VITAMIN_B12 = 0.15;
       const String BARCODE = '7340011364184';
       const String PRODUCT_NAME = 'Chili beans';
       const String NUTRIMENT_DATA_PER = '100g';
@@ -352,6 +342,8 @@ void main() {
             carbohydratesUnit: _getMassUnit(i),
             proteins: PROTEINS + i,
             proteinsUnit: _getMassUnit(i),
+            vitaminB12: VITAMIN_B12 + i,
+            vitaminB12Unit: _getMassUnit(i),
             fat: FAT + i,
             fatUnit: _getMassUnit(i));
 
@@ -410,6 +402,14 @@ void main() {
             );
             expect(searchedNutriments.fat, closeTo(expectedFat, EPSILON));
             expect(searchedNutriments.fatUnit, nutriments.fatUnit);
+            final expectedB12 = _nutrientToGrams(
+              nutriments.vitaminB12,
+              nutriments.vitaminB12Unit,
+            );
+            expect(
+                searchedNutriments.vitaminB12, closeTo(expectedB12, EPSILON));
+            expect(
+                searchedNutriments.vitaminB12Unit, nutriments.vitaminB12Unit);
           }
         }
       }
@@ -433,6 +433,82 @@ void main() {
         product,
       );
       expect(status.isWrongUsernameOrPassword(), isTrue);
+    });
+
+    // TODO(monsieurtanuki): to be fixed, cf. https://github.com/openfoodfacts/smooth-app/pull/1142
+    test(
+      'Nutrition update issue',
+      () async {
+        const String barcode = '7300400481588'; // Wasa
+        final ProductQueryConfiguration configurations =
+            ProductQueryConfiguration(
+          barcode,
+          language: OpenFoodFactsLanguage.FRENCH,
+          fields: [ProductField.ALL],
+        );
+
+        // Step 1: get the product
+        ProductResult result = await OpenFoodAPIClient.getProduct(
+          configurations,
+          user: TestConstants.TEST_USER,
+        );
+        expect(result.status, 1);
+        expect(result.product, isNotNull);
+        expect(result.product!.nutriments, isNotNull);
+        final double? initialMagnesium = result.product!.nutriments!.magnesium;
+        expect(initialMagnesium, isNotNull); // in real life: 200mg = 0.2
+
+        // Step 2: save the slightly altered product
+        final double nextMagnesium = initialMagnesium! + .001;
+        result.product!.nutriments!.magnesium = nextMagnesium;
+        final Product savedProduct = Product(barcode: barcode);
+        savedProduct.nutriments = result.product!.nutriments;
+        final Status status = await OpenFoodAPIClient.saveProduct(
+          TestConstants.TEST_USER,
+          savedProduct,
+        );
+        expect(status.status, 1);
+        expect(status.error, null);
+
+        // Step 3: check if the value was correctly saved
+        result = await OpenFoodAPIClient.getProduct(
+          configurations,
+          user: TestConstants.TEST_USER,
+        );
+        expect(result.status, 1);
+        expect(result.product, isNotNull);
+        expect(result.product!.nutriments, isNotNull);
+        final double? latestMagnesium = result.product!.nutriments!.magnesium;
+        expect(latestMagnesium, nextMagnesium);
+      },
+      skip: 'To be fixed',
+    );
+  },
+      timeout: Timeout(
+        // some tests can be slow here
+        Duration(seconds: 90),
+      ));
+
+  group('No nutrition data', () {
+    test('No nutrition data with nutriments', () async {
+      Product product = Product(
+          noNutritionData: true,
+          nutriments: Nutriments(
+            salt: 1.0,
+          ));
+
+      expect(product.noNutritionData, isTrue);
+      expect(product.nutriments, isNull);
+    });
+
+    test('Nutriments', () async {
+      Product product = Product(
+          nutriments: Nutriments(
+        salt: 1.0,
+      ));
+
+      expect(product.noNutritionData, isFalse);
+      expect(product.nutriments, isNotNull);
     });
   });
 }

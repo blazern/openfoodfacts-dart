@@ -32,6 +32,7 @@ enum ProductField {
   INGREDIENTS_TAGS,
   INGREDIENTS_TAGS_IN_LANGUAGES,
   IMAGES_FRESHNESS_IN_LANGUAGES,
+  NO_NUTRITION_DATA,
   NUTRIMENTS,
   ADDITIVES,
   NUTRIENT_LEVELS,
@@ -49,6 +50,8 @@ enum ProductField {
   LABELS_TAGS_IN_LANGUAGES,
   PACKAGING,
   PACKAGING_TAGS,
+  PACKAGING_TEXT_IN_LANGUAGES,
+  PACKAGING_TEXT_ALL_LANGUAGES,
   MISC_TAGS,
   STATES_TAGS,
   TRACES_TAGS,
@@ -62,6 +65,8 @@ enum ProductField {
   ECOSCORE_GRADE,
   ECOSCORE_SCORE,
   ECOSCORE_DATA,
+  KNOWLEDGE_PANELS,
+  ENVIRONMENT_INFOCARD,
   ALL
 }
 
@@ -97,12 +102,15 @@ extension ProductFieldExtension on ProductField {
     ProductField.INGREDIENTS_TAGS: 'ingredients_tags',
     ProductField.INGREDIENTS_TAGS_IN_LANGUAGES: 'ingredients_tags_',
     ProductField.IMAGES_FRESHNESS_IN_LANGUAGES: 'images_to_update_',
+    ProductField.NO_NUTRITION_DATA: 'no_nutrition_data',
     ProductField.NUTRIMENTS: 'nutriments',
     ProductField.ADDITIVES: 'additives_tags',
     ProductField.NUTRIENT_LEVELS: 'nutrient_levels',
     ProductField.INGREDIENTS_TEXT: 'ingredients_text',
     ProductField.INGREDIENTS_TEXT_IN_LANGUAGES: 'ingredients_text_',
     ProductField.INGREDIENTS_TEXT_ALL_LANGUAGES: 'ingredients_text_languages',
+    ProductField.PACKAGING_TEXT_IN_LANGUAGES: 'packaging_text_',
+    ProductField.PACKAGING_TEXT_ALL_LANGUAGES: 'packaging_text_languages',
     ProductField.NUTRIMENT_ENERGY_UNIT: 'nutriment_energy_unit',
     ProductField.NUTRIMENT_DATA_PER: 'nutrition_data_per',
     ProductField.NUTRISCORE: 'nutrition_grade_fr',
@@ -127,6 +135,8 @@ extension ProductFieldExtension on ProductField {
     ProductField.ECOSCORE_GRADE: 'ecoscore_grade',
     ProductField.ECOSCORE_SCORE: 'ecoscore_score',
     ProductField.ECOSCORE_DATA: 'ecoscore_data',
+    ProductField.KNOWLEDGE_PANELS: 'knowledge_panels',
+    ProductField.ENVIRONMENT_INFOCARD: 'environment_infocard',
   };
 
   /// Returns the key of the product field
@@ -145,6 +155,7 @@ List<String> convertFieldsToStrings(
     ProductField.NAME_IN_LANGUAGES,
     ProductField.COUNTRIES_TAGS_IN_LANGUAGES,
     ProductField.INGREDIENTS_TEXT_IN_LANGUAGES,
+    ProductField.PACKAGING_TEXT_IN_LANGUAGES,
     ProductField.INGREDIENTS_TAGS_IN_LANGUAGES,
     ProductField.IMAGES_FRESHNESS_IN_LANGUAGES,
   ];

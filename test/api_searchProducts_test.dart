@@ -3,6 +3,7 @@ import 'package:openfoodfacts/model/parameter/SearchTerms.dart';
 import 'package:openfoodfacts/model/parameter/TagFilter.dart';
 import 'package:openfoodfacts/model/parameter/WithoutAdditives.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
+import 'package:openfoodfacts/utils/CountryHelper.dart';
 import 'package:openfoodfacts/utils/OpenFoodAPIConfiguration.dart';
 import 'package:openfoodfacts/utils/PnnsGroups.dart';
 import 'package:openfoodfacts/utils/ProductListQueryConfiguration.dart';
@@ -15,9 +16,31 @@ void main() {
   OpenFoodAPIConfiguration.globalQueryType = QueryType.TEST;
 
   group('$OpenFoodAPIClient search products', () {
+    const String UNKNOWN_BARCODE = '1111111111111111111111111111111';
+    const List<String> BARCODES = [
+      '8024884500403',
+      '3263855093192',
+      '3045320001570',
+      '3021762383344',
+      '4008400402222',
+      '3330720237255',
+      '3608580823513',
+      '3700278403936',
+      '3302747010029',
+      '3608580823490',
+      '3250391660995',
+      '3760020506605',
+      '8722700202387',
+      '3330720237330',
+      '3535800940005',
+      '20000691',
+      '3270190127512',
+      UNKNOWN_BARCODE,
+    ];
+
     test('search favorite products', () async {
       final parameters = <Parameter>[
-        const Page(page: 1),
+        const PageNumber(page: 1),
         const PageSize(size: 10),
         const SortBy(option: SortOption.POPULARITY)
       ];
@@ -43,7 +66,7 @@ void main() {
 
     test('search favorite products EN', () async {
       final parameters = <Parameter>[
-        const Page(page: 14),
+        const PageNumber(page: 14),
         const PageSize(size: 3),
         const SortBy(option: SortOption.EDIT)
       ];
@@ -69,7 +92,7 @@ void main() {
 
     test('type bug : ingredient percent int vs String ', () async {
       final parameters = <Parameter>[
-        const Page(page: 16),
+        const PageNumber(page: 16),
         const PageSize(size: 5),
         const SortBy(option: SortOption.POPULARITY)
       ];
@@ -93,9 +116,9 @@ void main() {
       expect(result.count, greaterThan(30000));
     });
 
-    test('search products by keywords', () async {
+    test('search products by keywords 1', () async {
       final List<Parameter> parameters = <Parameter>[
-        const Page(page: 2),
+        const PageNumber(page: 2),
         const PageSize(size: 10),
         const SearchTerms(terms: ['Kiwi'])
       ];
@@ -117,6 +140,32 @@ void main() {
       expect(result.products!.length, 10);
       expect(result.products![0].runtimeType, Product);
       expect(result.count, greaterThan(900));
+    });
+
+    // Additional test with image field for testing [coordinates_image_size] conversion
+    // c.f. https://github.com/openfoodfacts/openfoodfacts-dart/issues/440
+    test('search products by keywords 2', () async {
+      final List<Parameter> parameters = <Parameter>[
+        const Page(page: 1),
+        const PageSize(size: 10),
+        const SortBy(option: SortOption.POPULARITY),
+        SearchTerms(terms: ['vitamin']),
+      ];
+
+      final ProductSearchQueryConfiguration configuration =
+          ProductSearchQueryConfiguration(
+        parametersList: parameters,
+        language: OpenFoodFactsLanguage.GERMAN,
+        fields: <ProductField>[ProductField.IMAGES],
+      );
+
+      SearchResult result = await OpenFoodAPIClient.searchProducts(
+        null,
+        configuration,
+        queryType: QueryType.PROD,
+      );
+
+      expect(result.products, isNotEmpty);
     });
 
     test('search products filter additives', () async {
@@ -153,7 +202,7 @@ void main() {
 
     test('search products with filter on tags', () async {
       final parameters = <Parameter>[
-        const Page(page: 5),
+        const PageNumber(page: 5),
         const PageSize(size: 10),
         const SortBy(option: SortOption.PRODUCT_NAME),
         TagFilter.fromType(
@@ -190,9 +239,9 @@ void main() {
     });
 
     test('search products with filter on all tags (part 1)', () async {
+      // the barcode I had in mind is 3229820129488
       const String brands = 'Bjorg';
       const String categories = 'en:breakfast-cereals';
-      const String packaging = 'fr:Sachet';
       const String labels = 'en:organic';
       const String origins = 'en:european-union-and-non-european-union';
       const String manufacturingPlaces = 'Allemagne';
@@ -215,8 +264,6 @@ void main() {
             tagFilterType: TagFilterType.BRANDS, tagName: brands),
         TagFilter.fromType(
             tagFilterType: TagFilterType.CATEGORIES, tagName: categories),
-        TagFilter.fromType(
-            tagFilterType: TagFilterType.PACKAGING, tagName: packaging),
         TagFilter.fromType(
             tagFilterType: TagFilterType.LABELS, tagName: labels),
         TagFilter.fromType(
@@ -266,11 +313,10 @@ void main() {
       );
 
       expect(result.products, isNotNull);
-      expect(result.products!.length, greaterThan(0));
+      expect(result.products, isNotEmpty);
       for (final Product product in result.products!) {
         expect(product.brands!, brands);
         expect(product.categoriesTags, contains(categories));
-        expect(product.packaging, contains(packaging));
         expect(product.labelsTags, contains(labels));
         expect(product.storesTags, contains(stores));
         expect(product.countriesTags, contains(countries));
@@ -314,12 +360,39 @@ void main() {
         configuration,
       );
 
-      expect(result.products!.length, greaterThan(0));
-
       expect(result.products, isNotNull);
+      expect(result.products, isNotEmpty);
       for (final Product product in result.products!) {
         expect(product.additives!.ids, contains(additives));
         // TODO(monsieurtanuki): extract the emb_codes from the product, and compare it to the expected value
+      }
+    });
+
+    test('search products with filter on all tags (part 3)', () async {
+      // will probably be barcode 111111555555
+      const String packaging = 'de:in-einer-plastikflasche';
+
+      final parameters = <Parameter>[
+        TagFilter.fromType(
+            tagFilterType: TagFilterType.PACKAGING, tagName: packaging),
+      ];
+
+      final ProductSearchQueryConfiguration configuration =
+          ProductSearchQueryConfiguration(
+        parametersList: parameters,
+        fields: [ProductField.ALL],
+        language: OpenFoodFactsLanguage.GERMAN,
+      );
+
+      final SearchResult result = await OpenFoodAPIClient.searchProducts(
+        TestConstants.TEST_USER,
+        configuration,
+      );
+
+      expect(result.products, isNotNull);
+      expect(result.products, isNotEmpty);
+      for (final Product product in result.products!) {
+        expect(product.packagingTags, contains(packaging));
       }
     });
 
@@ -337,7 +410,7 @@ void main() {
       );
 
       final parameters = <Parameter>[
-        const Page(page: 1),
+        const PageNumber(page: 1),
         const SearchTerms(terms: ['Quoted Coca "Cola"']),
       ];
 
@@ -358,28 +431,6 @@ void main() {
     });
 
     test('multiple products', () async {
-      const String UNKNOWN_BARCODE = '1111111111111111111111111111111';
-      const List<String> BARCODES = [
-        '8024884500403',
-        '3263855093192',
-        '3045320001570',
-        '3021762383344',
-        '4008400402222',
-        '3330720237255',
-        '3608580823513',
-        '3700278403936',
-        '3302747010029',
-        '3608580823490',
-        '3250391660995',
-        '3760020506605',
-        '8722700202387',
-        '3330720237330',
-        '3535800940005',
-        '20000691',
-        '3270190127512',
-        UNKNOWN_BARCODE,
-      ];
-
       final ProductListQueryConfiguration configuration =
           ProductListQueryConfiguration(
         BARCODES,
@@ -404,27 +455,27 @@ void main() {
       }
     });
 
-    test('multiple products and pagination', () async {
-      const BARCODES = [
-        '8024884500403',
-        '3263855093192',
-        '3045320001570',
-        '3021762383344',
-        '4008400402222',
-        '3330720237255',
-        '3608580823513',
-        '3700278403936',
-        '3302747010029',
-        '3608580823490',
-        '3250391660995',
-        '3760020506605',
-        '8722700202387',
-        '3330720237330',
-        '3535800940005',
-        '20000691',
-        '3270190127512',
-      ];
+    test('product freshness', () async {
+      final Map<String, ProductFreshness> result =
+          await OpenFoodAPIClient.getProductFreshness(
+        barcodes: BARCODES,
+        user: TestConstants.PROD_USER,
+        language: OpenFoodFactsLanguage.FRENCH,
+        country: OpenFoodFactsCountry.FRANCE,
+        queryType: QueryType.PROD,
+      );
 
+      int count = 0;
+      for (final MapEntry<String, ProductFreshness> entry in result.entries) {
+        count++;
+        expect(entry.key == UNKNOWN_BARCODE, false);
+        expect(entry.key, isIn(BARCODES));
+        expect(entry.value.lastModified, isNotNull);
+      }
+      expect(count, BARCODES.length - 1);
+    });
+
+    test('multiple products and pagination', () async {
       final obtainedBarcodes = <String>[];
       var page = 1;
       while (true) {
@@ -449,7 +500,9 @@ void main() {
       }
       // We want to test pagination mechanism so we expect >1 pages
       expect(page, greaterThan(1));
-      expect(obtainedBarcodes.toSet(), BARCODES.toSet());
+      final Set<String> knownBarcodes = BARCODES.toSet();
+      knownBarcodes.remove(UNKNOWN_BARCODE);
+      expect(obtainedBarcodes.toSet(), knownBarcodes);
     });
 
     test('query potatoes products', () async {
@@ -459,7 +512,7 @@ void main() {
         fields: [ProductField.ALL],
         parametersList: [
           PnnsGroup2Filter(pnnsGroup2: PnnsGroup2.POTATOES),
-          Page(page: 3),
+          PageNumber(page: 3),
         ],
       );
 
@@ -474,6 +527,34 @@ void main() {
       expect(result.products!.length, 24);
       expect(result.products![0].runtimeType, Product);
       expect(result.count, greaterThan(1500));
+    });
+
+    test('many many products', () async {
+      final List<String> manyBarcodes = <String>[];
+      // for a GET, the limit seems to be around 8000 characters
+      // but here we don't care anymore as now it's a POST
+      for (int i = 0; i < 100; i++) {
+        manyBarcodes.addAll(BARCODES);
+      }
+
+      final ProductListQueryConfiguration configuration =
+          ProductListQueryConfiguration(
+        manyBarcodes,
+        fields: [ProductField.BARCODE, ProductField.NAME],
+        language: OpenFoodFactsLanguage.FRENCH,
+      );
+
+      final SearchResult result = await OpenFoodAPIClient.getProductList(
+        TestConstants.PROD_USER,
+        configuration,
+        queryType: QueryType.PROD,
+      );
+
+      expect(result.page, 1);
+      expect(result.pageSize, 24);
+      expect(result.count, BARCODES.length - 1);
+      expect(result.products, isNotNull);
+      expect(result.products!.length, BARCODES.length - 1);
     });
   });
 }

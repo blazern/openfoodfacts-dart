@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:openfoodfacts/utils/UnitHelper.dart';
+
 import '../interface/JsonObject.dart';
 
 part 'Nutriments.g.dart';
@@ -65,6 +66,11 @@ class Nutriments extends JsonObject {
       includeIfNull: false,
       fromJson: JsonObject.parseDouble)
   double? energyKcal;
+
+  /// Energy, in kj, per serving
+  @JsonKey(
+      name: 'energy-kj', includeIfNull: false, fromJson: JsonObject.parseDouble)
+  double? energyKj;
 
   /// Energy, in kcal, per 100 grams of food
   @JsonKey(
@@ -145,7 +151,7 @@ class Nutriments extends JsonObject {
       fromJson: JsonObject.parseInt)
   int? novaGroupServing;
 
-  /// Caffeine, in grams, per serving
+  /// Energy, in kJ, per serving
   @JsonKey(
       name: 'energy_serving',
       includeIfNull: false,
@@ -171,6 +177,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'energy_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? energyUnit;
 
@@ -178,6 +185,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'energy-kcal_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? energyKcalUnit;
 
@@ -199,6 +207,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'caffeine_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? caffeineUnit;
 
@@ -220,6 +229,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'calcium_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? calciumUnit;
 
@@ -239,6 +249,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'iron_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? ironUnit;
 
@@ -260,6 +271,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'vitamin-c_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? vitaminCUnit;
 
@@ -281,6 +293,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'magnesium_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? magnesiumUnit;
 
@@ -302,6 +315,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'phosphorus_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? phosphorusUnit;
 
@@ -323,6 +337,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'potassium_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? potassiumUnit;
 
@@ -344,6 +359,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'sodium_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? sodiumUnit;
 
@@ -363,6 +379,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'zinc_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? zincUnit;
 
@@ -384,6 +401,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'copper_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? copperUnit;
 
@@ -405,6 +423,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'selenium_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? seleniumUnit;
 
@@ -426,6 +445,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'vitamin-a_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? vitaminAUnit;
 
@@ -447,6 +467,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'vitamin-e_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? vitaminEUnit;
 
@@ -468,6 +489,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'vitamin-d_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? vitaminDUnit;
 
@@ -489,6 +511,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'vitamin-b1_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? vitaminB1Unit;
 
@@ -510,6 +533,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'vitamin-b2_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? vitaminB2Unit;
 
@@ -531,6 +555,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'vitamin-pp_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? vitaminPPUnit;
 
@@ -552,6 +577,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'vitamin-b6_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? vitaminB6Unit;
 
@@ -573,6 +599,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'vitamin-b12_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? vitaminB12Unit;
 
@@ -594,6 +621,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'vitamin-b9_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? vitaminB9Unit;
 
@@ -615,6 +643,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'vitamin-k_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? vitaminKUnit;
 
@@ -636,6 +665,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'cholesterol_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? cholesterolUnit;
 
@@ -657,6 +687,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'butyric-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? butyricAcidUnit;
 
@@ -678,6 +709,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'caproic-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? caproicAcidUnit;
 
@@ -699,6 +731,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'caprylic-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? caprylicAcidUnit;
 
@@ -720,6 +753,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'capric-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? capricAcidUnit;
 
@@ -741,6 +775,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'lauric-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? lauricAcidUnit;
 
@@ -762,6 +797,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'myristic-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? myristicAcidUnit;
 
@@ -783,6 +819,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'palmitic-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? palmiticAcidUnit;
 
@@ -804,6 +841,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'stearic-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? stearicAcidUnit;
 
@@ -825,6 +863,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'oleic-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? oleicAcidUnit;
 
@@ -846,6 +885,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'linoleic-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? linoleicAcidUnit;
 
@@ -867,6 +907,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'docosahexaenoic-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? docosahexaenoicAcidUnit;
 
@@ -888,6 +929,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'eicosapentaenoic-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? eicosapentaenoicAcidUnit;
 
@@ -909,6 +951,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'erucic-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? erucicAcidUnit;
 
@@ -930,6 +973,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'monounsaturated_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? monounsaturatedUnit;
 
@@ -951,17 +995,18 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'polyunsaturated_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? polyunsaturatedUnit;
 
-  /// Alcohol, in % vol
+  /// Alcohol, in % vol, per serving
   @JsonKey(
       name: 'alcohol_serving',
       includeIfNull: false,
       fromJson: JsonObject.parseDouble)
   double? alcoholServing;
 
-  /// Alcohol, in % vol
+  /// Alcohol, in % vol, per 100g of food
   @JsonKey(
       name: 'alcohol_100g',
       includeIfNull: false,
@@ -972,6 +1017,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'alcohol_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? alcoholUnit;
 
@@ -993,6 +1039,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'pantothenic-acid_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? pantothenicAcidUnit;
 
@@ -1014,6 +1061,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'biotin_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? biotinUnit;
 
@@ -1035,6 +1083,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'chloride_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? chlorideUnit;
 
@@ -1056,6 +1105,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'chromium_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? chromiumUnit;
 
@@ -1077,6 +1127,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'fluoride_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? fluorideUnit;
 
@@ -1098,6 +1149,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'iodine_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? iodineUnit;
 
@@ -1119,6 +1171,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'manganese_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? manganeseUnit;
 
@@ -1140,6 +1193,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'molybdenum_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? molybdenumUnit;
 
@@ -1161,6 +1215,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'omega-3-fat_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? omega3FatUnit;
 
@@ -1182,6 +1237,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'omega-6-fat_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? omega6FatUnit;
 
@@ -1203,6 +1259,7 @@ class Nutriments extends JsonObject {
   @JsonKey(
       name: 'trans-fat_unit',
       includeIfNull: false,
+      toJson: UnitHelper.unitToString,
       fromJson: UnitHelper.stringToUnit)
   Unit? transFatUnit;
 
@@ -1216,6 +1273,7 @@ class Nutriments extends JsonObject {
     this.novaGroup,
     this.energy,
     this.energyKcal,
+    this.energyKj,
     this.energyKcal100g,
     this.carbohydrates,
     this.saltServing,
@@ -1389,4 +1447,71 @@ class Nutriments extends JsonObject {
 
   static Map<String, dynamic> toJsonHelper(Nutriments? n) =>
       n != null ? _$NutrimentsToJson(n) : {};
+
+  /// Nutrient ids supported by [Nutriments].
+  ///
+  /// To be used when another source of nutrients (e.g. [OrderedNutrient])
+  /// has a broader list of nutrients - that we simply could not handle with
+  /// [Nutriments].
+  static const Set<String> supportedNutrientIds = <String>{
+    'salt',
+    'fiber',
+    'sugars',
+    'fat',
+    'saturated-fat',
+    'proteins',
+    'nova-group',
+    'energy',
+    'energy-kcal',
+    'carbohydrates',
+    'caffeine',
+    'calcium',
+    'iron',
+    'vitamin-c',
+    'magnesium',
+    'phosphorus',
+    'potassium',
+    'sodium',
+    'zinc',
+    'copper',
+    'selenium',
+    'vitamin-a',
+    'vitamin-e',
+    'vitamin-d',
+    'vitamin-b1',
+    'vitamin-b2',
+    'vitamin-pp',
+    'vitamin-b6',
+    'vitamin-b12',
+    'vitamin-b9',
+    'vitamin-k',
+    'cholesterol',
+    'butyric-acid',
+    'caproic-acid',
+    'caprylic-acid',
+    'capric-acid',
+    'lauric-acid',
+    'myristic-acid',
+    'palmitic-acid',
+    'stearic-acid',
+    'oleic-acid',
+    'linoleic-acid',
+    'docosahexaenoic-acid',
+    'eicosapentaenoic-acid',
+    'erucic-acid',
+    'monounsaturated',
+    'polyunsaturated',
+    'alcohol',
+    'pantothenic-acid',
+    'biotin',
+    'chloride',
+    'chromium',
+    'fluoride',
+    'iodine',
+    'manganese',
+    'molybdenum',
+    'omega-3-fat',
+    'omega-6-fat',
+    'trans-fat',
+  };
 }

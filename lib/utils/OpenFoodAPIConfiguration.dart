@@ -14,6 +14,9 @@ class OpenFoodAPIConfiguration {
   ///Defines a global userAgent to tell the backend the source of the request.
   static UserAgent? userAgent;
 
+  ///Defines a global uuid to tell the backend the source of the request.
+  static String? uuid;
+
   ///Defines a global user to avoid adding it to every request
   static User? globalUser;
 
@@ -25,6 +28,14 @@ class OpenFoodAPIConfiguration {
 
   ///Uri host of the test requests to the backend
   static String uriTestHost = 'world.openfoodfacts.net';
+
+  ///Url base for images in prod: needs to match the domain of uriProdHost
+  static String imageProdUrlBase =
+      'https://static.openfoodfacts.org/images/products/';
+
+  ///Url base for images in test: needs to match the domain of uriTestHost
+  static String imageTestUrlBase =
+      'https://static.openfoodfacts.net/images/products/';
 
   ///Uri host of the Robotoff requests to the backend, modify this to direct the request to a self-hosted instance.
   static String uriProdHostRobotoff = 'robotoff.openfoodfacts.org';
@@ -38,6 +49,12 @@ class OpenFoodAPIConfiguration {
   ///Uri host of the test requests to Folksonomy
   static String uriTestHostFolksonomy =
       'api.folksonomy.openfoodfacts.net'; // TODO does not work
+
+  ///Uri host of the Events requests to the backend, modify this to direct the request to a self-hosted instance.
+  static String uriProdHostEvents = 'events.openfoodfacts.org';
+
+  ///Uri host of the test requests to Events
+  static String uriTestHostEvents = 'events.openfoodfacts.net';
 
   ///Changes whether the requests sent by this package to the test or main server.
   static QueryType globalQueryType = QueryType.PROD;

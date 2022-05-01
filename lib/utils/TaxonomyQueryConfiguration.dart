@@ -94,7 +94,7 @@ abstract class TaxonomyQueryConfiguration<T extends JsonObject,
   Map<String, String> getParametersMap() {
     final Map<String, String> result = {};
 
-    result['type'] = tagType.key;
+    result['tagtype'] = tagType.key;
     if (_isRootConfiguration) {
       result['include_root_entries'] = '1';
     } else {
@@ -129,6 +129,13 @@ abstract class TaxonomyQueryConfiguration<T extends JsonObject,
     return UriHelper.getUri(
       path: 'api/v2/taxonomy',
       queryParameters: getParametersMap(),
+      queryType: queryType,
+    );
+  }
+
+  Uri getPostUri([QueryType? queryType]) {
+    return UriHelper.getPostUri(
+      path: 'api/v2/taxonomy',
       queryType: queryType,
     );
   }

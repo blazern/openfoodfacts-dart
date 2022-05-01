@@ -38,6 +38,25 @@ class HttpHelper {
   static const String USER_AGENT = 'Dart API';
   static const String FROM = 'anonymous';
 
+  /// Adds user agent data to parameters, for statistics purpose
+  static Map<String, String>? addUserAgentParameters(
+    Map<String, String>? map,
+  ) {
+    if (OpenFoodAPIConfiguration.userAgent?.name != null) {
+      map ??= <String, String>{};
+      map['app_name'] = OpenFoodAPIConfiguration.userAgent!.name!;
+    }
+    if (OpenFoodAPIConfiguration.userAgent?.version != null) {
+      map ??= <String, String>{};
+      map['app_version'] = OpenFoodAPIConfiguration.userAgent!.version!;
+    }
+    if (OpenFoodAPIConfiguration.uuid != null) {
+      map ??= <String, String>{};
+      map['app_uuid'] = OpenFoodAPIConfiguration.uuid!;
+    }
+    return map;
+  }
+
   /// Send a http get request to the specified uri.
   /// The data of the request (if any) has to be provided as parameter within the uri.
   /// The result of the request will be returned as string.
@@ -81,7 +100,7 @@ class HttpHelper {
   /// The result of the request will be returned as string.
   Future<http.Response> doPostRequest(
     Uri uri,
-    Map<String, String?> body,
+    Map<String, String> body,
     User? user, {
     QueryType? queryType,
   }) async {
@@ -93,9 +112,16 @@ class HttpHelper {
             OpenFoodAPIConfiguration.getQueryType(queryType) == QueryType.PROD
                 ? false
                 : true));
-    request.bodyFields = body.map((key, value) => MapEntry(key, value ?? ''));
+    request.bodyFields = body.map((key, value) => MapEntry(key, value));
+    if (user != null) {
+      request.bodyFields.addAll(user.toData());
+    }
+    request.bodyFields = addUserAgentParameters(request.bodyFields) ?? {};
     return http.Response.fromStream(await request.send());
 
+    // if (user != null) {
+    //   body.addAll(user.toData());
+    // }
     // http.Response response = await http.post(
     //   uri,
     //   headers: _buildHeaders(
@@ -104,7 +130,7 @@ class HttpHelper {
     //           OpenFoodAPIConfiguration.getQueryType(queryType) == QueryType.PROD
     //               ? false
     //               : true),
-    //   body: body,
+    //   body: addUserAgentParameters(body),
     // );
     // return response;
   }
@@ -134,7 +160,10 @@ class HttpHelper {
     );
 
     request.headers.addAll({'Content-Type': 'multipart/form-data'});
-    request.fields.addAll(body);
+    request.fields.addAll(addUserAgentParameters(body)!);
+    if (user != null) {
+      request.fields.addAll(user.toData());
+    }
 
     // add all file entries to the request
     if (files != null) {
